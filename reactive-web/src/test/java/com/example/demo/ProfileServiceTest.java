@@ -18,7 +18,7 @@ import java.util.function.Predicate;
 @Log4j2
 @DataMongoTest // <1>
 @Import(ProfileService.class) // <2>
-@ExtendWith(SpringExtension.class)  //<3>
+@ExtendWith(SpringExtension.class)  // <3>
 public class ProfileServiceTest {
 
     private final ProfileService service;
@@ -40,10 +40,10 @@ public class ProfileServiceTest {
 
         StepVerifier
             .create(composite) // <6>
-            .expectNextMatches(match)  //<7>
+            .expectNextMatches(match)  // <7>
             .expectNextMatches(match)
             .expectNextMatches(match)
-            .verifyComplete(); //<8>
+            .verifyComplete(); // <8>
     }
 
     @Test

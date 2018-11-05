@@ -42,8 +42,8 @@ class WebSocketConfigurationTest {
     public void testNotificationsOnUpdates() throws Exception {
 
         int count = 10; // <5>
-        AtomicLong counter = new AtomicLong(); //<6>
-        URI uri = URI.create("ws://localhost:8080/ws/profiles"); //<7>
+        AtomicLong counter = new AtomicLong(); // <6>
+        URI uri = URI.create("ws://localhost:8080/ws/profiles"); // <7>
 
         // <8>
         socketClient.execute(uri, (WebSocketSession session) -> {

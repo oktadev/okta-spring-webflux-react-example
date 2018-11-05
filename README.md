@@ -105,11 +105,12 @@ spring:
 
 This example uses the following open source libraries:
 
+* [Okta's React SDK](https://github.com/okta/okta-oidc-js/tree/master/packages/okta-react)
+* [React](https://reactjs.org/)
 * [Spring Boot](https://spring.io/projects/spring-boot)
 * [Spring Data](https://spring.io/projects/spring-data)
 * [Spring WebFlux](https://docs.spring.io/spring/docs/current/spring-framework-reference/web-reactive.html)
-* [React](https://reactjs.org/)
-* [Okta's React SDK](https://github.com/okta/okta-oidc-js/tree/master/packages/okta-react)
+* [TypeScript](https://www.typescriptlang.org/)
 
 ## Help
 

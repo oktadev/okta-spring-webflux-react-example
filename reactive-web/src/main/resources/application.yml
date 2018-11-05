@@ -11,11 +11,10 @@ spring:
           okta:
             issuer-uri: ${oidc.issuer-uri}
         registration:
-          login:
-            okta:
-              client-id: ${oidc.client-id}
-              client-secret: ${oidc.client-secret}
-              scope: openid email profile
+          okta:
+            client-id: ${oidc.client-id}
+            client-secret: ${oidc.client-secret}
+            scope: openid, email, profile
       resourceserver:
         jwt:
           issuer-uri: ${oidc.issuer-uri}

@@ -10,15 +10,15 @@ import org.springframework.test.web.reactive.server.WebTestClient;
 @Log4j2
 @ActiveProfiles("default")
 @Import({ProfileEndpointConfiguration.class,
-	ProfileHandler.class, ProfileService.class})
-public class FunctionalProfileEndpointsTest extends ProfileEndpointsBaseClass {
+        ProfileHandler.class, ProfileService.class})
+public class FunctionalProfileEndpointsTest extends AbstractBaseProfileEndpoints {
 
-		@BeforeAll
-		static void before() {
-				log.info("running default " + ProfileRestController.class.getName() + " tests");
-		}
+    @BeforeAll
+    static void before() {
+        log.info("running default " + ProfileRestController.class.getName() + " tests");
+    }
 
-		FunctionalProfileEndpointsTest(@Autowired WebTestClient client) {
-				super(client);
-		}
+    FunctionalProfileEndpointsTest(@Autowired WebTestClient client) {
+        super(client);
+    }
 }

@@ -17,14 +17,14 @@ import java.util.UUID;
 @Log4j2
 @WebFluxTest // <1>
 @ExtendWith(SpringExtension.class)
-public abstract class ProfileEndpointsBaseClass {
+public abstract class AbstractBaseProfileEndpoints {
 
     private final WebTestClient client; // <2>
 
     @MockBean  // <3>
     private ProfileRepository repository;
 
-    public ProfileEndpointsBaseClass(WebTestClient client) {
+    public AbstractBaseProfileEndpoints(WebTestClient client) {
         this.client = client;
     }
 

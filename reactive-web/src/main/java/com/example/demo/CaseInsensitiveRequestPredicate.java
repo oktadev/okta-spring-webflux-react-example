@@ -16,7 +16,7 @@ public class CaseInsensitiveRequestPredicate implements RequestPredicate {
     }
 
     @Override
-    public boolean test(ServerRequest request) { //<1>
+    public boolean test(ServerRequest request) { // <1>
         return this.target.test(new LowerCaseUriServerRequestWrapper(request));
     }
 

@@ -10,7 +10,7 @@ import java.util.UUID;
 
 @Log4j2 // <1>
 @Component
-@org.springframework.context.annotation.Profile("demo")// <2>
+@org.springframework.context.annotation.Profile("demo") // <2>
 class SampleDataInitializer
     implements ApplicationListener<ApplicationReadyEvent> {
 
