@@ -48,35 +48,29 @@ class WebSocketConfiguration {
 
     @Bean
     WebSocketHandler webSocketHandler(
-        ObjectMapper objectMapper, // <5>
-        ProfileCreatedEventPublisher eventPublisher // <6>
+            ObjectMapper objectMapper, // <5>
+            ProfileCreatedEventPublisher eventPublisher // <6>
     ) {
 
-        Flux<ProfileCreatedEvent> publish = Flux
-            .create(eventPublisher)
-            .share(); // <7>
+        Flux<ProfileCreatedEvent> publish = Flux.create(eventPublisher).share(); // <7>
 
         return session -> {
 
-            Flux<WebSocketMessage> messageFlux = publish
-                .map(evt -> {
-                    try {
-                        // <8>
-                        Profile profile = (Profile) evt.getSource();
-                        Map<String, String> data = new HashMap<>();
-                        data.put("id", profile.getId());
-                        return objectMapper.writeValueAsString(data);
-                    }
-                    catch (JsonProcessingException e) {
-                        throw new RuntimeException(e);
-                    }
-                })
-                .map(str -> {
-                    log.info("sending " + str);
-                    return session.textMessage(str);
-                });
+            Flux<WebSocketMessage> messageFlux = publish.map(evt -> {
+                try {
+                    Profile profile = (Profile) evt.getSource(); // <1>
+                    Map<String, String> data = new HashMap<>(); // <2>
+                    data.put("id", profile.getId());
+                    return objectMapper.writeValueAsString(data); // <3>
+                } catch (JsonProcessingException e) {
+                    throw new RuntimeException(e);
+                }
+            }).map(str -> {
+                log.info("sending " + str);
+                return session.textMessage(str);
+            });
 
-            return session.send(messageFlux); // <9>
+            return session.send(messageFlux);
         };
     }
 

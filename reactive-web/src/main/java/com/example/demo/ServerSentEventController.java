@@ -23,7 +23,7 @@ public class ServerSentEventController {
     public Flux<String> profiles() {
         return this.events.map(pce -> {
             try {
-                return objectMapper.writeValueAsString(pce);
+                return objectMapper.writeValueAsString(pce) + "\n\n";
             } catch (JsonProcessingException e) {
                 throw new RuntimeException(e);
             }
