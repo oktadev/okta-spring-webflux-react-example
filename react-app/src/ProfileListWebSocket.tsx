@@ -1,6 +1,4 @@
-import * as React from 'react';
-import { Auth } from './App';
-import { withAuth } from '@okta/okta-react';
+import React, { Component } from 'react';
 
 interface Profile {
   id: number;
@@ -8,7 +6,6 @@ interface Profile {
 }
 
 interface ProfileListProps {
-  auth: Auth;
 }
 
 interface ProfileListState {
@@ -16,7 +13,7 @@ interface ProfileListState {
   isLoading: boolean;
 }
 
-class ProfileListWebSocket extends React.Component<ProfileListProps, ProfileListState> {
+class ProfileList extends Component<ProfileListProps, ProfileListState> {
 
   constructor(props: ProfileListProps) {
     super(props);
@@ -29,22 +26,17 @@ class ProfileListWebSocket extends React.Component<ProfileListProps, ProfileList
 
   async componentDidMount() {
     this.setState({isLoading: true});
-    const headers = {
-      headers: {Authorization: 'Bearer ' + await this.props.auth.getAccessToken()}
-    };
 
-    const response = await fetch('http://localhost:8080/profiles', headers);
-
+    const response = await fetch('http://localhost:3000/profiles');
     const data = await response.json();
     this.setState({profiles: data, isLoading: false});
 
-    const socket = new WebSocket('ws://localhost:8080/ws/profiles');
-    socket.addEventListener('message', async (event: any) => {
-      const message = JSON.parse(event.data);
-      const request = await fetch(`http://localhost:8080/profiles/${message.id}`, headers);
-      const profile = await request.json();
+    const socket = new WebSocket('ws://localhost:3000/ws/profiles'); // <1>
+    socket.addEventListener('message', async (event: any) => { // <2>
+      const profile = JSON.parse(event.data);
+      console.log('profile', profile);
       this.state.profiles.push(profile);
-      this.setState({profiles: this.state.profiles});
+      this.setState({profiles: this.state.profiles}); // <3>
     });
   }
 
@@ -63,9 +55,10 @@ class ProfileListWebSocket extends React.Component<ProfileListProps, ProfileList
             {profile.email}<br/>
           </div>
         )}
+        <a href="/" className="App-link">Home</a>
       </div>
     );
   }
 }
 
-export default withAuth(ProfileListWebSocket);
+export default ProfileList;

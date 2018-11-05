@@ -1,12 +1,12 @@
-#!/bin/bash 
+#!/bin/bash
 port=${1:-8080}
 count=0
-token=<your access token>
+accessToken=<your access token>
 
 profile () {
   ((count++))
   echo "posting #${count}"
-  http POST http://localhost:${port}/profiles email="random${count}" Authorization:"Bearer ${token}"
+  http POST http://localhost:${port}/profiles email="random${count}" "Authorization: Bearer ${accessToken}"
   if [ $count -gt 120 ]
   then
     echo "count is $count, ending..."

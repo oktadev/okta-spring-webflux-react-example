@@ -1,10 +1,9 @@
-import * as React from 'react';
+import React, { Component } from 'react';
 import './App.css';
 import { withAuth } from '@okta/okta-react';
 import { Auth } from './App';
-
 import logo from './logo.svg';
-import { NavLink } from 'react-router-dom';
+import ProfileList from './ProfileList';
 
 interface HomeProps {
   auth: Auth;
@@ -14,7 +13,7 @@ interface HomeState {
   authenticated: boolean;
 }
 
-class Home extends React.Component<HomeProps, HomeState> {
+class Home extends Component<HomeProps, HomeState> {
   constructor(props: HomeProps) {
     super(props);
     this.state = {authenticated: false};
@@ -54,13 +53,7 @@ class Home extends React.Component<HomeProps, HomeState> {
         <div className="Buttons">
           <button onClick={this.logout}>Logout</button>
           <p>
-            <NavLink to="/profiles" activeClassName="active">Profile List</NavLink>&nbsp;|&nbsp;
-            <NavLink to="/profiles/interval" activeClassName="active">Interval</NavLink>&nbsp;|&nbsp;
-            <NavLink to="/profiles/eventsource" activeClassName="active">EventSource</NavLink>&nbsp;|&nbsp;
-            <NavLink to="/profiles/rxjs" activeClassName="active">RxJS</NavLink>&nbsp;|&nbsp;
-            <NavLink to="/profiles/ws" activeClassName="active">WebSockets</NavLink>
-            {/*<a href="/profiles/rsocket">Profile List with RSocket</a><br/>
-            <a href="/profiles/socketio">Profile List with SocketIO</a><br/>*/}
+            <ProfileList auth={this.props.auth}/>
           </p>
         </div>
       );
@@ -77,8 +70,8 @@ class Home extends React.Component<HomeProps, HomeState> {
         <header className="App-header">
           <img src={logo} className="App-logo" alt="logo"/>
           <h1 className="App-title">Welcome to React</h1>
+          {body}
         </header>
-        {body}
       </div>
     );
   }

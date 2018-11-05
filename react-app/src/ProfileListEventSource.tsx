@@ -1,7 +1,4 @@
-import * as React from 'react';
-import { Auth } from './App';
-import { withAuth } from '@okta/okta-react';
-import EventSource from 'event-source'
+import React, { Component } from 'react';
 
 interface Profile {
   id: number;
@@ -9,7 +6,6 @@ interface Profile {
 }
 
 interface ProfileListProps {
-  auth: Auth;
 }
 
 interface ProfileListState {
@@ -17,7 +13,7 @@ interface ProfileListState {
   isLoading: boolean;
 }
 
-class ProfileListEventSource extends React.Component<ProfileListProps, ProfileListState> {
+class ProfileList extends Component<ProfileListProps, ProfileListState> {
 
   constructor(props: ProfileListProps) {
     super(props);
@@ -28,28 +24,18 @@ class ProfileListEventSource extends React.Component<ProfileListProps, ProfileLi
     };
   }
 
-  async fetchData(accessToken: string) {
+  async componentDidMount() {
     this.setState({isLoading: true});
-    const response = await fetch('http://localhost:8080/profiles', {
-      headers: {
-        Authorization: 'Bearer ' + accessToken
-      }
-    });
+    const response = await fetch('http://localhost:3000/profiles');
     const data = await response.json();
     this.setState({profiles: data, isLoading: false});
-  }
 
-  async componentDidMount() {
-    const accessToken = await this.props.auth.getAccessToken();
-    this.fetchData(accessToken);
-    const eventSource = new EventSource('http://localhost:8080/sse/profiles', {
-      headers: { Authorization: accessToken }
-    });
-    eventSource.onopen = (event: any) => console.log('open', event);
+    const eventSource = new EventSource('http://localhost:8080/sse/profiles'); // <1>
+    eventSource.onopen = (event: any) => console.log('open', event); // <2>
     eventSource.onmessage = (event: any) => {
-      const profile = JSON.parse(event.data).source;
+      const profile = JSON.parse(event.data).source; // <3>
       this.state.profiles.push(profile);
-      this.setState({profiles: this.state.profiles});
+      this.setState({profiles: this.state.profiles}); // <4>
     };
     eventSource.onerror = (event: any) => console.log('error', event);
   }
@@ -69,9 +55,10 @@ class ProfileListEventSource extends React.Component<ProfileListProps, ProfileLi
             {profile.email}<br/>
           </div>
         )}
+        <a href="/" className="App-link">Home</a>
       </div>
     );
   }
 }
 
-export default withAuth(ProfileListEventSource);
+export default ProfileList;

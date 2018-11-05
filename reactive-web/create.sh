@@ -1,5 +1,4 @@
 #!/bin/bash
 port=${1:-8080}
-accessToken=eyJraWQiOiIycW1BZkZlM1NLZGx0LXNhOXkzZDJjTjZtbjVNci00U2Fmb0dGS3VEaG1JIiwiYWxnIjoiUlMyNTYifQ.eyJ2ZXIiOjEsImp0aSI6IkFULmpGV2VtMW50TVBQSVVOZEdhNmRGT0ZBc2FVQV94VjJiSXpRUzBTeGJpSlUiLCJpc3MiOiJodHRwczovL2Rldi03Mzc1MjMub2t0YXByZXZpZXcuY29tL29hdXRoMi9kZWZhdWx0IiwiYXVkIjoiYXBpOi8vZGVmYXVsdCIsImlhdCI6MTU0MTQ0Njk3NSwiZXhwIjoxNTQxNDUwNTc1LCJjaWQiOiIwb2FnYnFicGs0cW1KRHBhUzBoNyIsInVpZCI6IjAwdWZraWptaHE3MFZ6Z1ZkMGg3Iiwic2NwIjpbIm9wZW5pZCIsInByb2ZpbGUiLCJlbWFpbCJdLCJzdWIiOiJkZW1vQG9rdGEuY29tIn0.vTpUIW_xJ-bGhL5IsJNxkJQ3OqMKbCdJW_wN8_Sd9uaGo8E5q2rEXslVx4VM1jOQ-QedYkP5tiioWT5bWNCJx6SqEAlU2V0IEbnzvHEG6kXpcukHxrffuzWoFZGzn24qYVCu4ZK9AiL_o3-G3TYMiYG2xDXfay4ls8ot-vyrWGwpQsvf6qipJmY1DAn9QQCNScP_vuB6BwRnVoiWf7Ivns1IPxMiKbP3rup7Q1FWVD68IO9b75u2lwCeaxneHHEg8Mr1W9Judkw7UanaYQmXV1D2UVykemiSGKjKwi6rUdGXEWuj0aKIa8gi4l32A2CSNLS4b8DzTt_qjy5Cc7H_yQ
 
-curl -H "content-type: application/json" -H "authorization: Bearer ${accessToken}" -d'{"email":"random"}' http://localhost:${port}/profiles # <1>
+curl -H "content-type: application/json" -d'{"email":"random"}' http://localhost:${port}/profiles # <1>

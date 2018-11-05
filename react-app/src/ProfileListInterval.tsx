@@ -1,6 +1,4 @@
-import * as React from 'react';
-import { Auth } from './App';
-import { withAuth } from '@okta/okta-react';
+import React, { Component } from 'react';
 
 interface Profile {
   id: number;
@@ -8,7 +6,6 @@ interface Profile {
 }
 
 interface ProfileListProps {
-  auth: Auth;
 }
 
 interface ProfileListState {
@@ -16,8 +13,8 @@ interface ProfileListState {
   isLoading: boolean;
 }
 
-class ProfileListInterval extends React.Component<ProfileListProps, ProfileListState> {
-  private interval: any;
+class ProfileList extends Component<ProfileListProps, ProfileListState> {
+  private interval: any; // <1>
 
   constructor(props: ProfileListProps) {
     super(props);
@@ -31,18 +28,14 @@ class ProfileListInterval extends React.Component<ProfileListProps, ProfileListS
   async fetchData() {
     this.setState({isLoading: true});
 
-    const response = await fetch('http://localhost:8080/profiles', {
-      headers: {
-        Authorization: 'Bearer ' + await this.props.auth.getAccessToken()
-      }
-    });
+    const response = await fetch('http://localhost:3000/profiles');
     const data = await response.json();
     this.setState({profiles: data, isLoading: false});
   }
 
   async componentDidMount() {
-    await this.fetchData();
-    this.interval = setInterval(() => this.fetchData(), 1000);
+    await this.fetchData(); // <2>
+    this.interval = setInterval(() => this.fetchData(), 1000); // <3>
   }
 
   componentWillUnmount() {
@@ -64,9 +57,10 @@ class ProfileListInterval extends React.Component<ProfileListProps, ProfileListS
             {profile.email}<br/>
           </div>
         )}
+        <a href="/" className="App-link">Home</a>
       </div>
     );
   }
 }
 
-export default withAuth(ProfileListInterval);
+export default ProfileList;

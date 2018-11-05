@@ -3,31 +3,35 @@
   "version": "0.1.0",
   "private": true,
   "dependencies": {
-    "@okta/okta-react": "^1.1.1",
-    "event-source": "git://github.com/AlexGalays/EventSource.git#923b9a0998fcfd7753040e09aa83764b3cc0230d",
-    "react": "^16.5.2",
-    "react-dom": "^16.5.2",
+    "@okta/okta-react": "^1.1.4",
+    "@types/jest": "^23.3.9",
+    "@types/node": "^10.12.2",
+    "@types/react": "^16.4.18",
+    "@types/react-dom": "^16.0.9",
+    "react": "^16.6.0",
+    "react-dom": "^16.6.0",
     "react-router-dom": "^4.3.1",
-    "react-scripts-ts": "2.17.0",
-    "rsocket-core": "^0.0.9",
-    "rsocket-websocket-client": "^0.0.9",
-    "rxjs": "^6.3.2",
-    "socket.io-client": "^2.1.1"
+    "react-scripts": "2.1.1",
+    "rxjs": "^6.3.3",
+    "typescript": "^3.1.6"
   },
   "scripts": {
-    "start": "react-scripts-ts start",
-    "build": "react-scripts-ts build",
-    "test": "react-scripts-ts test --env=jsdom",
-    "eject": "react-scripts-ts eject"
+    "start": "react-scripts start",
+    "build": "react-scripts build",
+    "test": "react-scripts test",
+    "eject": "react-scripts eject"
   },
+  "eslintConfig": {
+    "extends": "react-app"
+  },
+  "browserslist": [
+    ">0.2%",
+    "not dead",
+    "not ie <= 11",
+    "not op_mini all"
+  ],
+  "proxy": "http://localhost:8080",
   "devDependencies": {
-    "@types/jest": "^23.3.2",
-    "@types/node": "^10.10.3",
-    "@types/react": "^16.4.14",
-    "@types/react-dom": "^16.0.7",
-    "@types/react-router-dom": "^4.3.1",
-    "@types/socket.io-client": "^1.4.32",
-    "rsocket-types": "^0.0.9",
-    "typescript": "^3.0.3"
+    "@types/react-router-dom": "^4.3.1"
   }
 }
