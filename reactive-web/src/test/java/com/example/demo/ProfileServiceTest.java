@@ -2,11 +2,9 @@ package com.example.demo;
 
 import lombok.extern.log4j.Log4j2;
 import org.junit.jupiter.api.Test;
-import org.junit.jupiter.api.extension.ExtendWith;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.data.mongo.DataMongoTest;
 import org.springframework.context.annotation.Import;
-import org.springframework.test.context.junit.jupiter.SpringExtension;
 import org.springframework.util.StringUtils;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
@@ -18,19 +16,18 @@ import java.util.function.Predicate;
 @Log4j2
 @DataMongoTest // <1>
 @Import(ProfileService.class) // <2>
-@ExtendWith(SpringExtension.class)  // <3>
 public class ProfileServiceTest {
 
     private final ProfileService service;
     private final ProfileRepository repository;
 
-    public ProfileServiceTest(@Autowired ProfileService service, // <4>
+    public ProfileServiceTest(@Autowired ProfileService service, // <3>
                               @Autowired ProfileRepository repository) {
         this.service = service;
         this.repository = repository;
     }
 
-    @Test // <5>
+    @Test // <4>
     public void getAll() {
         Flux<Profile> saved = repository.saveAll(Flux.just(new Profile(null, "Josh"), new Profile(null, "Matt"), new Profile(null, "Jane")));
 
@@ -39,11 +36,11 @@ public class ProfileServiceTest {
         Predicate<Profile> match = profile -> saved.any(saveItem -> saveItem.equals(profile)).block();
 
         StepVerifier
-            .create(composite) // <6>
-            .expectNextMatches(match)  // <7>
+            .create(composite) // <5>
+            .expectNextMatches(match)  // <6>
             .expectNextMatches(match)
             .expectNextMatches(match)
-            .verifyComplete(); // <8>
+            .verifyComplete(); // <7>
     }
 
     @Test

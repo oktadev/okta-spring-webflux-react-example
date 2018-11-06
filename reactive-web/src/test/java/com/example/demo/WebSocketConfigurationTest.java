@@ -3,10 +3,8 @@ package com.example.demo;
 import lombok.extern.log4j.Log4j2;
 import org.assertj.core.api.Assertions;
 import org.junit.jupiter.api.Test;
-import org.junit.jupiter.api.extension.ExtendWith;
 import org.reactivestreams.Publisher;
 import org.springframework.boot.test.context.SpringBootTest;
-import org.springframework.test.context.junit.jupiter.SpringExtension;
 import org.springframework.web.reactive.function.BodyInserters;
 import org.springframework.web.reactive.function.client.WebClient;
 import org.springframework.web.reactive.socket.WebSocketMessage;
@@ -18,13 +16,10 @@ import reactor.core.publisher.Mono;
 
 import java.net.URI;
 import java.util.UUID;
-import java.util.concurrent.Executor;
-import java.util.concurrent.Executors;
 import java.util.concurrent.atomic.AtomicLong;
 
 @Log4j2
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.DEFINED_PORT) // <1>
-@ExtendWith(SpringExtension.class)
 class WebSocketConfigurationTest {
 
     // <2>
