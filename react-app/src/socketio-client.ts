@@ -1,5 +1,3 @@
-import * as io from 'socket.io-client';
-
 function subscribeToProfiles(callback: any) {
   const socket = io('localhost:3000', {
     path: '/ws/profiles',

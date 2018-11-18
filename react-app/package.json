@@ -4,16 +4,14 @@
   "private": true,
   "dependencies": {
     "@okta/okta-react": "^1.1.4",
-    "@types/jest": "^23.3.9",
-    "@types/node": "^10.12.2",
-    "@types/react": "^16.4.18",
-    "@types/react-dom": "^16.0.9",
     "react": "^16.6.0",
     "react-dom": "^16.6.0",
     "react-router-dom": "^4.3.1",
     "react-scripts": "2.1.1",
     "rxjs": "^6.3.3",
-    "typescript": "^3.1.6"
+    "rsocket-core": "^0.0.9",
+    "rsocket-websocket-client": "^0.0.9",
+    "socket.io-client": "^2.1.1"
   },
   "scripts": {
     "start": "react-scripts start",
@@ -32,6 +30,13 @@
   ],
   "proxy": "http://localhost:8080",
   "devDependencies": {
-    "@types/react-router-dom": "^4.3.1"
+    "@types/jest": "^23.3.9",
+    "@types/node": "^10.12.2",
+    "@types/react": "^16.4.18",
+    "@types/react-dom": "^16.0.9",
+    "@types/react-router-dom": "^4.3.1",
+    "@types/socket.io-client": "^1.4.32",
+    "rsocket-types": "^0.0.9",
+    "typescript": "^3.1.6"
   }
 }
