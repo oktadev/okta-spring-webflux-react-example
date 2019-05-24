@@ -14,7 +14,6 @@ spring:
           okta:
             client-id: ${oidc.client-id}
             client-secret: ${oidc.client-secret}
-            scope: openid, email, profile
       resourceserver:
         jwt:
           issuer-uri: ${oidc.issuer-uri}

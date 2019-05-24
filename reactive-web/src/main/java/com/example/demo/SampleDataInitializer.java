@@ -26,7 +26,7 @@ class SampleDataInitializer
             .deleteAll() // <4>
             .thenMany(
                 Flux
-                    .just("A", "B", "C", "D")//<5>
+                    .just("A", "B", "C", "D") // <5>
                     .map(name -> new Profile(UUID.randomUUID().toString(), name + "@email.com")) // <6>
                     .flatMap(repository::save) // <7>
             )
