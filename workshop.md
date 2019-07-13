@@ -4,16 +4,15 @@ The brackets at the end of each step indicate the alias's or IntelliJ Live Templ
 
 ### Spring WebFlux API
 
-. Use start.spring.io to create an app with `data-mongodb-reactive`, `webflux`, `devtools`, and `lombok` [`webflux-start`]
+1. Use start.spring.io to create an app with `data-mongodb-reactive`, `webflux`, `devtools`, and `lombok` [`webflux-start`]
 
   http https://start.spring.io/starter.zip dependencies==data-mongodb-reactive,webflux,devtools,lombok -d
 
-. Add `Profile`, `ProfileRepository`, and `SampleDataInitializer` [`webflux-entity`, `webflux-repo`, `webflux-data`]
+2. Add `Profile`, `ProfileRepository`, and `SampleDataInitializer` [`webflux-entity`, `webflux-repo`, `webflux-data`]
 
 <details>
- <summary>src/main/java/com/example/demo/Profile.java</summary>
-[source,java]
-----
+ <summary>`src/main/java/com/example/demo/Profile.java`</summary>
+```java
 package com.example.demo;
 
 import lombok.AllArgsConstructor;
@@ -33,26 +32,24 @@ class Profile {
 
     private String email;
 }
-----
+```
 </details>
 
 <details>
- <summary>src/main/java/com/example/demo/ProfileRepository.java</summary>
-[source,java]
-----
+ <summary>`src/main/java/com/example/demo/ProfileRepository.java`</summary>
+```java
 package com.example.demo;
 
 import org.springframework.data.mongodb.repository.ReactiveMongoRepository;
 
 interface ProfileRepository extends ReactiveMongoRepository<Profile, String> {
 }
-----
+```
 </details>
 
 <details>
- <summary>src/main/java/com/example/demo/SampleDataInitializer.java</summary>
-[source,java]
-----
+ <summary>`src/main/java/com/example/demo/SampleDataInitializer.java`</summary>
+```java
 package com.example.demo;
 
 import lombok.extern.log4j.Log4j2;
@@ -88,7 +85,7 @@ class SampleDataInitializer implements ApplicationListener<ApplicationReadyEvent
             .subscribe(profile -> log.info("saving " + profile.toString()));
     }
 }
-----
+```
 </details>
 
 . Start and see list of profiles in console: `SPRING_PROFILES_ACTIVE=demo mvn`
