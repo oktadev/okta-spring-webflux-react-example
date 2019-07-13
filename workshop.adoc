@@ -19,11 +19,19 @@ You can also watch the following screencast to see all the code created in this 
 == Agenda
 
 * **13:00** Talk: Intro to Reactive Programming and Spring WebFlux
-* **13:30** Lab: Build Reactive APIs with Spring WebFlux
+* **13:30** Lab: Build a Reactive API with Spring WebFlux
 * **15:00** Talk: Intro to React and Streaming Data Options
 * **15:30** Lab: Build a React UI with Streaming Data
 
 NOTE: The brackets at the end of each step indicate the alias's or IntelliJ Live Templates to use. You can find the template definitions at https://github.com/mraible/idea-live-templates[mraible/idea-live-templates].
+
+== Get Started
+
+You'll need to install a few prerequisites to complete the labs in this workshop:
+
+* https://adoptopenjdk.com[Java 11] (hint: use https://sdkman.io/[SDKMAN!])
+* https://httpie.org/[HTTPie]
+* https://nodejs.org[Node 11]
 
 == Part I: Build Reactive APIs with Spring WebFlux
 
@@ -31,7 +39,7 @@ Follow the steps below or read https://developer.okta.com/blog/2018/09/24/reacti
 
 === Spring WebFlux API
 
-. Use start.spring.io to create an app with `data-mongodb-reactive`, `webflux`, `devtools`, and `lombok` [`webflux-start`]
+. Use https://start.spring.io[start.spring.io] to create an app with `data-mongodb-reactive`, `webflux`, `devtools`, and `lombok` [`webflux-start`]
 
   http https://start.spring.io/starter.zip dependencies==data-mongodb-reactive,webflux,devtools,lombok -d
 
@@ -122,7 +130,7 @@ class SampleDataInitializer implements ApplicationListener<ApplicationReadyEvent
 }
 ----
 ====
-[start=3]
+[start=4]
 . Start and see list of profiles in console: `SPRING_PROFILES_ACTIVE=demo mvn`
 
 . Create `ProfileService` [`webflux-service`]
@@ -182,7 +190,7 @@ class ProfileService {
 ----
 ====
 
-[start=5]
+[start=6]
 . Create `ProfileRestController` with a `/profiles` endpoint [`webflux-controller`]
 
 .`src/main/java/com/example/demo/ProfileRestController.java`
@@ -250,7 +258,7 @@ class ProfileRestController {
 ----
 ====
 
-[start=6]
+[start=7]
 . Restart server with classic profile: `SPRING_PROFILES_ACTIVE=classic mvn`
 
 . Restart and confirm http://localhost:8080/profiles works in browser and with http
@@ -584,7 +592,7 @@ class LowerCaseUriServerRequestWrapper extends ServerRequestWrapper {
 ====
 
 [start=11]
-. Restart and confirm http://localhost:8080/profiles works in browser and with http
+. Restart and confirm http://localhost:8080/profiles works in browser and with HTTPie
 
 . Create `static/ws.html` to show event notifications [`webflux-ws`]
 
@@ -611,9 +619,22 @@ class LowerCaseUriServerRequestWrapper extends ServerRequestWrapper {
 </html>
 ----
 ====
-
+[start=13]
 . Restore `doOnSuccess` in `ProfileService`, open in your browser http://localhost:8080/ws.html, and run `create.sh` in a terminal window
 
+.`create.sh`
+[%collapsible]
+====
+[source,bash]
+----
+#!/bin/bash
+port=${1:-8080}
+
+curl -H"content-type: application/json" -d'{"email":"random"}' http://localhost:${port}/profiles
+----
+====
+
+[start=14]
 . Create `ServerSentEventController`, try `http http://localhost:8080/sse/profiles -S` [`webflux-sse`]
 
 .`src/main/java/com/example/demo/ServerSentEventController.java`
