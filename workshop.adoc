@@ -10,7 +10,7 @@ The brackets at the end of each step indicate the alias's or IntelliJ Live Templ
 
 . Add `Profile`, `ProfileRepository`, and `SampleDataInitializer` [`webflux-entity`, `webflux-repo`, `webflux-data`]
 
-.src/main/java/com/example/demo/Profile.java
+.`src/main/java/com/example/demo/Profile.java`
 [%collapsible]
 ====
 [,java]
