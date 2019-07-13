@@ -10,7 +10,8 @@ The brackets at the end of each step indicate the alias's or IntelliJ Live Templ
 
 . Add `Profile`, `ProfileRepository`, and `SampleDataInitializer` [`webflux-entity`, `webflux-repo`, `webflux-data`]
 
-<details><summary>src/main/java/com/example/demo/Profile.java</summary>
+<details>
+ <summary>src/main/java/com/example/demo/Profile.java</summary>
 [source,java]
 ----
 package com.example.demo;
@@ -35,7 +36,8 @@ class Profile {
 ----
 </details>
 
-<details><summary>src/main/java/com/example/demo/ProfileRepository.java</summary>
+<details>
+ <summary>src/main/java/com/example/demo/ProfileRepository.java</summary>
 [source,java]
 ----
 package com.example.demo;
@@ -47,7 +49,8 @@ interface ProfileRepository extends ReactiveMongoRepository<Profile, String> {
 ----
 </details>
 
-<details><summary>src/main/java/com/example/demo/SampleDataInitializer.java</summary>
+<details>
+ <summary>src/main/java/com/example/demo/SampleDataInitializer.java</summary>
 [source,java]
 ----
 package com.example.demo;
