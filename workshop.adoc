@@ -1,6 +1,33 @@
-== Full Stack Reactive Workshop Steps
+= Workshop: Full Stack Reactive with React and Spring WebFlux
 
-The brackets at the end of each step indicate the alias's or IntelliJ Live Templates to use. You can find the template definitions at https://github.com/mraible/idea-live-templates[mraible/idea-live-templates].
+This is a cheat sheet for Matt Raible's Full Stack Reactive with React and Spring WebFlux workshop. This cheat sheet contains the bare minimum steps you'll need to build the example app.
+
+This workshop is based on the following blog post series:
+
+1. https://developer.okta.com/blog/2018/09/21/reactive-programming-with-spring[Get Started with Reactive Programming in Spring]
+2. https://developer.okta.com/blog/2018/09/24/reactive-apis-with-spring-webflux[Build Reactive APIs with Spring WebFlux]
+3. https://developer.okta.com/blog/2018/09/25/spring-webflux-websockets-react[Full Stack Reactive with Spring WebFlux, WebSockets, and React]
+
+You can also watch the following screencast to see all the code created in this series.
+
+++++
+<div style="text-align: center; margin-bottom: 10px">
+<iframe width="700" height="394" style="max-width: 100%" src="https://www.youtube.com/embed/1xpwYe154Ys" frameborder="0" allow="accelerometer; autoplay; encrypted-media; gyroscope; picture-in-picture" allowfullscreen></iframe>
+</div>
+++++
+
+== Agenda
+
+* **13:00** Talk: Intro to Reactive Programming and Spring WebFlux
+* **13:30** Lab: Build Reactive APIs with Spring WebFlux
+* **15:00** Talk: Intro to React and Streaming Data Options
+* **15:30** Lab: Build a React UI with Streaming Data
+
+NOTE: The brackets at the end of each step indicate the alias's or IntelliJ Live Templates to use. You can find the template definitions at https://github.com/mraible/idea-live-templates[mraible/idea-live-templates].
+
+== Part I: Build Reactive APIs with Spring WebFlux
+
+Follow the steps below or read https://developer.okta.com/blog/2018/09/24/reactive-apis-with-spring-webflux[Build Reactive APIs with Spring WebFlux] for a more thorough tutorial.
 
 === Spring WebFlux API
 
@@ -8,12 +35,14 @@ The brackets at the end of each step indicate the alias's or IntelliJ Live Templ
 
   http https://start.spring.io/starter.zip dependencies==data-mongodb-reactive,webflux,devtools,lombok -d
 
+. Install MongoDB. If you're on a Mac, you can use `brew install mongodb`. If you're on Debian-based Linux distributions, you can use `apt install mongodb`. Start it by running `mongod` in a terminal window.
+
 . Add `Profile`, `ProfileRepository`, and `SampleDataInitializer` [`webflux-entity`, `webflux-repo`, `webflux-data`]
 
 .`src/main/java/com/example/demo/Profile.java`
 [%collapsible]
 ====
-[,java]
+[source,java]
 ----
 package com.example.demo;
 
@@ -37,10 +66,10 @@ class Profile {
 ----
 ====
 
-.src/main/java/com/example/demo/ProfileRepository.java
+.`src/main/java/com/example/demo/ProfileRepository.java`
 [%collapsible]
 ====
-[,java]
+[source,java]
 ----
 package com.example.demo;
 
@@ -51,10 +80,10 @@ interface ProfileRepository extends ReactiveMongoRepository<Profile, String> {
 ----
 ====
 
-.src/main/java/com/example/demo/SampleDataInitializer.java
+.`src/main/java/com/example/demo/SampleDataInitializer.java`
 [%collapsible]
 ====
-[,java]
+[source,java]
 ----
 package com.example.demo;
 
@@ -98,8 +127,130 @@ class SampleDataInitializer implements ApplicationListener<ApplicationReadyEvent
 
 . Create `ProfileService` [`webflux-service`]
 
+.`src/main/java/com/example/demo/ProfileService.java`
+[%collapsible]
+====
+[source,java]
+----
+package com.example.demo;
+
+import lombok.extern.log4j.Log4j2;
+import org.springframework.context.ApplicationEventPublisher;
+import org.springframework.stereotype.Service;
+import reactor.core.publisher.Flux;
+import reactor.core.publisher.Mono;
+
+@Log4j2
+@Service
+class ProfileService {
+
+    private final ApplicationEventPublisher publisher;
+    private final ProfileRepository repository;
+
+    ProfileService(ApplicationEventPublisher publisher, ProfileRepository repository) {
+        this.publisher = publisher;
+        this.repository = repository;
+    }
+
+    public Flux<Profile> all() {
+        return this.repository.findAll();
+    }
+
+    public Mono<Profile> get(String id) {
+        return this.repository.findById(id);
+    }
+
+    public Mono<Profile> update(String id, String email) {
+        return this.repository
+                .findById(id)
+                .map(p -> new Profile(p.getId(), email))
+                .flatMap(this.repository::save);
+    }
+
+    public Mono<Profile> delete(String id) {
+        return this.repository
+                .findById(id)
+                .flatMap(p -> this.repository.deleteById(p.getId()).thenReturn(p));
+    }
+
+    public Mono<Profile> create(String email) {
+        return this.repository
+                .save(new Profile(null, email));
+                //.doOnSuccess(entity -> this.publisher.publishEvent(new ProfileCreatedEvent(entity)));
+    }
+}
+----
+====
+
+[start=5]
 . Create `ProfileRestController` with a `/profiles` endpoint [`webflux-controller`]
 
+.`src/main/java/com/example/demo/ProfileRestController.java`
+[%collapsible]
+====
+[source,java]
+----
+package com.example.demo;
+
+import org.reactivestreams.Publisher;
+import org.springframework.http.MediaType;
+import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.*;
+import reactor.core.publisher.Mono;
+
+import java.net.URI;
+
+@RestController
+@RequestMapping(value = "/profiles", produces = MediaType.APPLICATION_JSON_VALUE)
+@org.springframework.context.annotation.Profile("classic")
+class ProfileRestController {
+
+    private final MediaType mediaType = MediaType.APPLICATION_JSON_UTF8;
+    private final ProfileService profileService;
+
+    ProfileRestController(ProfileService profileService) {
+        this.profileService = profileService;
+    }
+
+    @GetMapping
+    Publisher<Profile> getAll() {
+        return this.profileService.all();
+    }
+
+
+    @GetMapping("/{id}")
+    Publisher<Profile> getById(@PathVariable("id") String id) {
+        return this.profileService.get(id);
+    }
+
+    @PostMapping
+    Publisher<ResponseEntity<Profile>> create(@RequestBody Profile profile) {
+        return this.profileService
+            .create(profile.getEmail())
+            .map(p -> ResponseEntity.created(URI.create("/profiles/" + p.getId()))
+                .contentType(mediaType)
+                .build());
+    }
+
+    @DeleteMapping("/{id}")
+    Publisher<Profile> deleteById(@PathVariable String id) {
+        return this.profileService.delete(id);
+    }
+
+    @PutMapping("/{id}")
+    Publisher<ResponseEntity<Profile>> updateById(@PathVariable String id, @RequestBody Profile profile) {
+        return Mono.just(profile)
+            .flatMap(p -> this.profileService.update(id, p.getEmail()))
+            .map(p -> org.springframework.http.ResponseEntity
+                .ok()
+                .contentType(this.mediaType)
+                .build());
+    }
+}
+----
+====
+
+[start=6]
 . Restart server with classic profile: `SPRING_PROFILES_ACTIVE=classic mvn`
 
 . Restart and confirm http://localhost:8080/profiles works in browser and with http
@@ -108,21 +259,406 @@ class SampleDataInitializer implements ApplicationListener<ApplicationReadyEvent
   http PUT :8080/profiles/1 email='matt.raible@okta.com'
   http DELETE :8080/profiles/1
 
-. Create `ProfileCreatedEvent`, `ProfileCreatedEventPublisher`, and update `ProfileService` [`webflux-event`, `webflux-publisher`]
+. Create `ProfileCreatedEvent`, `ProfileCreatedEventPublisher` [`webflux-event`, `webflux-publisher`]
 
+.`src/main/java/com/example/demo/ProfileCreatedEvent.java`
+[%collapsible]
+====
+[source,java]
+----
+package com.example.demo;
+
+import org.springframework.context.ApplicationEvent;
+
+public class ProfileCreatedEvent extends ApplicationEvent {
+
+    public ProfileCreatedEvent(Profile source) {
+        super(source);
+    }
+}
+----
+====
+
+.`src/main/java/com/example/demo/ProfileCreatedEventPublisher.java`
+[%collapsible]
+====
+[source,java]
+----
+package com.example.demo;
+
+import org.springframework.context.ApplicationListener;
+import org.springframework.stereotype.Component;
+import org.springframework.util.ReflectionUtils;
+import reactor.core.publisher.FluxSink;
+
+import java.util.concurrent.BlockingQueue;
+import java.util.concurrent.Executor;
+import java.util.concurrent.LinkedBlockingQueue;
+import java.util.function.Consumer;
+
+@Component
+class ProfileCreatedEventPublisher implements
+    ApplicationListener<ProfileCreatedEvent>,
+    Consumer<FluxSink<ProfileCreatedEvent>> {
+
+    private final Executor executor;
+    private final BlockingQueue<ProfileCreatedEvent> queue =
+        new LinkedBlockingQueue<>();
+
+    ProfileCreatedEventPublisher(Executor executor) {
+        this.executor = executor;
+    }
+
+    @Override
+    public void onApplicationEvent(ProfileCreatedEvent event) {
+        this.queue.offer(event);
+    }
+
+     @Override
+    public void accept(FluxSink<ProfileCreatedEvent> sink) {
+        this.executor.execute(() -> {
+            while (true) {
+                try {
+                    ProfileCreatedEvent event = queue.take();
+                    sink.next(event);
+                }
+                catch (InterruptedException e) {
+                    ReflectionUtils.rethrowRuntimeException(e);
+                }
+            }
+        });
+    }
+}
+----
+====
+
+[start=9]
 . Create `WebSocketConfiguration` for executor bean [`webflux-websocket`]
 
+.`src/main/java/com/example/demo/WebSocketConfiguration.java`
+[%collapsible]
+====
+[source,java]
+----
+package com.example.demo;
+
+import com.fasterxml.jackson.core.JsonProcessingException;
+import ObjectMapper;
+import lombok.extern.log4j.Log4j2;
+import org.springframework.context.annotation.Bean;
+import org.springframework.context.annotation.Configuration;
+import org.springframework.web.reactive.HandlerMapping;
+import org.springframework.web.reactive.handler.SimpleUrlHandlerMapping;
+import org.springframework.web.reactive.socket.WebSocketHandler;
+import org.springframework.web.reactive.socket.WebSocketMessage;
+import org.springframework.web.reactive.socket.server.support.WebSocketHandlerAdapter;
+import reactor.core.publisher.Flux;
+
+import java.util.Collections;
+import java.util.concurrent.Executor;
+import java.util.concurrent.Executors;
+
+@Log4j2
+@Configuration
+class WebSocketConfiguration {
+
+    @Bean
+    Executor executor() {
+        return Executors.newSingleThreadExecutor();
+    }
+
+    @Bean
+    HandlerMapping handlerMapping(WebSocketHandler wsh) {
+        return new SimpleUrlHandlerMapping() {
+            {
+                setUrlMap(Collections.singletonMap("/ws/profiles", wsh));
+                setOrder(10);
+            }
+        };
+    }
+
+    @Bean
+    WebSocketHandlerAdapter webSocketHandlerAdapter() {
+        return new WebSocketHandlerAdapter();
+    }
+
+    @Bean
+    WebSocketHandler webSocketHandler(
+        ObjectMapper objectMapper,
+        ProfileCreatedEventPublisher eventPublisher
+    ) {
+
+        Flux<ProfileCreatedEvent> publish = Flux
+            .create(eventPublisher)
+            .share();
+
+        return session -> {
+
+            Flux<WebSocketMessage> messageFlux = publish
+                .map(evt -> {
+                    try {
+                        return objectMapper.writeValueAsString(evt.getSource());
+                    }
+                    catch (JsonProcessingException e) {
+                        throw new RuntimeException(e);
+                    }
+                })
+                .map(str -> {
+                    log.info("sending " + str);
+                    return session.textMessage(str);
+                });
+
+            return session.send(messageFlux);
+        };
+    }
+}
+----
+====
+
+[start=10]
 . Create `ProfileHandler`, `ProfileEndpointConfiguration`, and `CaseInsensitiveRequestPredicate` [`webflux-handler`, `webflux-endpoint`, `webflux-predicate`]
 
+.`src/main/java/com/example/demo/ProfileHandler.java`
+[%collapsible]
+====
+[source,java]
+----
+package com.example.demo;
+
+import org.reactivestreams.Publisher;
+import org.springframework.http.MediaType;
+import org.springframework.stereotype.Component;
+import org.springframework.web.reactive.function.server.ServerRequest;
+import org.springframework.web.reactive.function.server.ServerResponse;
+import reactor.core.publisher.Flux;
+import reactor.core.publisher.Mono;
+
+import java.net.URI;
+
+@Component
+class ProfileHandler {
+    private final ProfileService profileService;
+
+    ProfileHandler(ProfileService profileService) {
+        this.profileService = profileService;
+    }
+
+    Mono<ServerResponse> getById(ServerRequest r) {
+        return defaultReadResponse(this.profileService.get(id(r)));
+    }
+
+    Mono<ServerResponse> all(ServerRequest r) {
+        return defaultReadResponse(this.profileService.all());
+    }
+
+    Mono<ServerResponse> deleteById(ServerRequest r) {
+        return defaultReadResponse(this.profileService.delete(id(r)));
+    }
+
+    Mono<ServerResponse> updateById(ServerRequest r) {
+        Flux<Profile> id = r.bodyToFlux(Profile.class)
+                .flatMap(p -> this.profileService.update(id(r), p.getEmail()));
+        return defaultReadResponse(id);
+    }
+
+    Mono<ServerResponse> create(ServerRequest request) {
+        Flux<Profile> flux = request
+                .bodyToFlux(Profile.class)
+                .flatMap(toWrite -> this.profileService.create(toWrite.getEmail()));
+        return defaultWriteResponse(flux);
+    }
+
+    private static Mono<ServerResponse> defaultWriteResponse(Publisher<Profile> profiles) {
+        return Mono.from(profiles)
+                .flatMap(p -> ServerResponse
+                        .created(URI.create("/profiles/" + p.getId()))
+                        .contentType(MediaType.APPLICATION_JSON_UTF8)
+                        .build()
+                );
+    }
+
+    private static Mono<ServerResponse> defaultReadResponse(Publisher<Profile> profiles) {
+        return ServerResponse
+                .ok()
+                .contentType(MediaType.APPLICATION_JSON_UTF8)
+                .body(profiles, Profile.class);
+    }
+
+    private static String id(ServerRequest r) {
+        return r.pathVariable("id");
+    }
+}
+----
+====
+
+.`src/main/java/com/example/demo/ProfileEndpointConfiguration.java`
+[%collapsible]
+====
+[source,java]
+----
+package com.example.demo;
+
+import org.springframework.context.annotation.Bean;
+import org.springframework.context.annotation.Configuration;
+import org.springframework.web.reactive.function.server.RequestPredicate;
+import org.springframework.web.reactive.function.server.RouterFunction;
+import org.springframework.web.reactive.function.server.ServerResponse;
+
+import static org.springframework.web.reactive.function.server.RequestPredicates.*;
+import static org.springframework.web.reactive.function.server.RouterFunctions.route;
+
+@Configuration
+class ProfileEndpointConfiguration {
+
+    @Bean
+    RouterFunction<ServerResponse> routes(ProfileHandler handler) {
+        return route(i(GET("/profiles")), handler::all)
+                .andRoute(i(GET("/profiles/{id}")), handler::getById)
+                .andRoute(i(DELETE("/profiles/{id}")), handler::deleteById)
+                .andRoute(i(POST("/profiles")), handler::create)
+                .andRoute(i(PUT("/profiles/{id}")), handler::updateById);
+    }
+
+    private static RequestPredicate i(RequestPredicate target) {
+        return new CaseInsensitiveRequestPredicate(target);
+    }
+}
+----
+====
+
+.`src/main/java/com/example/demo/CaseInsensitiveRequestPredicate.java`
+[%collapsible]
+====
+[source,java]
+----
+package com.example.demo;
+
+import org.springframework.http.server.PathContainer;
+import org.springframework.web.reactive.function.server.RequestPredicate;
+import org.springframework.web.reactive.function.server.ServerRequest;
+import org.springframework.web.reactive.function.server.support.ServerRequestWrapper;
+
+import java.net.URI;
+
+public class CaseInsensitiveRequestPredicate implements RequestPredicate {
+
+    private final RequestPredicate target;
+
+    CaseInsensitiveRequestPredicate(RequestPredicate target) {
+        this.target = target;
+    }
+
+    @Override
+    public boolean test(ServerRequest request) {
+        return this.target.test(new LowerCaseUriServerRequestWrapper(request));
+    }
+
+    @Override
+    public String toString() {
+        return this.target.toString();
+    }
+}
+
+class LowerCaseUriServerRequestWrapper extends ServerRequestWrapper {
+
+    LowerCaseUriServerRequestWrapper(ServerRequest delegate) {
+        super(delegate);
+    }
+
+    @Override
+    public URI uri() {
+        return URI.create(super.uri().toString().toLowerCase());
+    }
+
+    @Override
+    public String path() {
+        return uri().getRawPath();
+    }
+
+    @Override
+    public PathContainer pathContainer() {
+        return PathContainer.parsePath(path());
+    }
+}
+----
+====
+
+[start=11]
 . Restart and confirm http://localhost:8080/profiles works in browser and with http
 
 . Create `static/ws.html` to show event notifications [`webflux-ws`]
 
-. Restore `doOnSuccess` in `ProfileService` and show http://localhost:8080/ws.html with `create.sh`
+.`src/main/resources/static/ws.html`
+[%collapsible]
+====
+[source,html]
+----
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <title>Profile notification client
+    </title>
+</head>
+<body>
+<script>
+  var socket = new WebSocket('ws://localhost:8080/ws/profiles');
+  socket.addEventListener('message', function (event) {
+    window.alert('message from server: ' + event.data);
+  });
+</script>
+</body>
+</html>
+----
+====
 
-. Create `ServerSentEventController`, show `http http://localhost:8080/sse/profiles -S` [`webflux-sse`]
+. Restore `doOnSuccess` in `ProfileService`, open in your browser http://localhost:8080/ws.html, and run `create.sh` in a terminal window
 
-=== React App
+. Create `ServerSentEventController`, try `http http://localhost:8080/sse/profiles -S` [`webflux-sse`]
+
+.`src/main/java/com/example/demo/ServerSentEventController.java`
+[%collapsible]
+====
+[source,java]
+----
+package com.example.demo;
+
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import org.springframework.http.MediaType;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.RestController;
+import reactor.core.publisher.Flux;
+
+@RestController
+public class ServerSentEventController {
+    private final Flux<ProfileCreatedEvent> events;
+    private final ObjectMapper objectMapper;
+
+    public ServerSentEventController(ProfileCreatedEventPublisher eventPublisher, ObjectMapper objectMapper) {
+        this.events = Flux.create(eventPublisher).share();
+        this.objectMapper = objectMapper;
+    }
+
+    @GetMapping(path = "/sse/profiles", produces = MediaType.TEXT_EVENT_STREAM_VALUE)
+    public Flux<String> profiles() {
+        return this.events.map(pce -> {
+            try {
+                return objectMapper.writeValueAsString(pce);
+            } catch (JsonProcessingException e) {
+                throw new RuntimeException(e);
+            }
+        });
+    }
+}
+----
+====
+
+== Part II: Build a React UI with Streaming Data
+
+Follow the steps below or read https://developer.okta.com/blog/2018/09/25/spring-webflux-websockets-react[Full Stack Reactive with Spring WebFlux, WebSockets, and React] for a more thorough tutorial.
+
+=== Create React App
 
 . Run `npx create-react-app react-app --typescript`; show app with `npm start`
 
@@ -185,4 +721,4 @@ class SampleDataInitializer implements ApplicationListener<ApplicationReadyEvent
 
 . Fini!
 
-Source: https://developer.okta.com/blog/2018/09/25/spring-webflux-websockets-react
+Questions or comments? Please send a message to https://twitter.com/mraible[@mraible] on Twitter, or ask your question on https://developer.okta.com/blog/2018/09/25/spring-webflux-websockets-react[this blog post].
