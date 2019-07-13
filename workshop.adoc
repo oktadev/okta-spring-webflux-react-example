@@ -10,8 +10,7 @@ The brackets at the end of each step indicate the alias's or IntelliJ Live Templ
 
 . Add `Profile`, `ProfileRepository`, and `SampleDataInitializer` [`webflux-entity`, `webflux-repo`, `webflux-data`]
 
-<details>
- <summary>src/main/java/com/example/demo/Profile.java</summary>
+.src/main/java/com/example/demo/Profile.java
 [source,java]
 ----
 package com.example.demo;
@@ -34,10 +33,9 @@ class Profile {
     private String email;
 }
 ----
-</details>
 
-<details>
- <summary>src/main/java/com/example/demo/ProfileRepository.java</summary>
+
+.src/main/java/com/example/demo/ProfileRepository.java
 [source,java]
 ----
 package com.example.demo;
@@ -47,10 +45,8 @@ import org.springframework.data.mongodb.repository.ReactiveMongoRepository;
 interface ProfileRepository extends ReactiveMongoRepository<Profile, String> {
 }
 ----
-</details>
 
-<details>
- <summary>src/main/java/com/example/demo/SampleDataInitializer.java</summary>
+.src/main/java/com/example/demo/SampleDataInitializer.java
 [source,java]
 ----
 package com.example.demo;
@@ -89,7 +85,6 @@ class SampleDataInitializer implements ApplicationListener<ApplicationReadyEvent
     }
 }
 ----
-</details>
 
 . Start and see list of profiles in console: `SPRING_PROFILES_ACTIVE=demo mvn`
 
