@@ -1,0 +1,182 @@
+== WebFlux + React Demo Steps
+
+The brackets at the end of each step indicate the alias's or IntelliJ Live Templates to use. You can find the template definitions at https://github.com/mraible/idea-live-templates[mraible/idea-live-templates].
+
+=== Spring WebFlux API
+
+. Use start.spring.io to create an app with `data-mongodb-reactive`, `webflux`, `devtools`, and `lombok` [`webflux-start`]
+
+  http https://start.spring.io/starter.zip dependencies==data-mongodb-reactive,webflux,devtools,lombok -d
+
+. Add `Profile`, `ProfileRepository`, and `SampleDataInitializer` [`webflux-entity`, `webflux-repo`, `webflux-data`]
+
+<details><summary>src/main/java/com/example/demo/Profile.java</summary>
+[source,java]
+----
+package com.example.demo;
+
+import lombok.AllArgsConstructor;
+import lombok.Data;
+import lombok.NoArgsConstructor;
+import org.springframework.data.annotation.Id;
+import org.springframework.data.mongodb.core.mapping.Document;
+
+@Document
+@Data
+@AllArgsConstructor
+@NoArgsConstructor
+class Profile {
+
+    @Id
+    private String id;
+
+    private String email;
+}
+----
+</details>
+
+<details><summary>src/main/java/com/example/demo/ProfileRepository.java</summary>
+[source,java]
+----
+package com.example.demo;
+
+import org.springframework.data.mongodb.repository.ReactiveMongoRepository;
+
+interface ProfileRepository extends ReactiveMongoRepository<Profile, String> {
+}
+----
+</details>
+
+<details><summary>src/main/java/com/example/demo/SampleDataInitializer.java</summary>
+[source,java]
+----
+package com.example.demo;
+
+import lombok.extern.log4j.Log4j2;
+import org.springframework.boot.context.event.ApplicationReadyEvent;
+import org.springframework.context.ApplicationListener;
+import org.springframework.stereotype.Component;
+import reactor.core.publisher.Flux;
+
+import java.util.UUID;
+
+@Log4j2
+@Component
+@org.springframework.context.annotation.Profile("demo")
+class SampleDataInitializer implements ApplicationListener<ApplicationReadyEvent> {
+
+    private final ProfileRepository repository;
+
+    public SampleDataInitializer(ProfileRepository repository) {
+        this.repository = repository;
+    }
+
+    @Override
+    public void onApplicationEvent(ApplicationReadyEvent event) {
+        repository
+            .deleteAll()
+            .thenMany(
+                reactor.core.publisher.Flux
+                    .just("A", "B", "C", "D")
+                    .map(name -> new Profile(UUID.randomUUID().toString(), name + "@email.com"))
+                    .flatMap(repository::save)
+            )
+            .thenMany(repository.findAll())
+            .subscribe(profile -> log.info("saving " + profile.toString()));
+    }
+}
+----
+</details>
+
+. Start and see list of profiles in console: `SPRING_PROFILES_ACTIVE=demo mvn`
+
+. Create `ProfileService` [`webflux-service`]
+
+. Create `ProfileRestController` with a `/profiles` endpoint [`webflux-controller`]
+
+. Restart server with classic profile: `SPRING_PROFILES_ACTIVE=classic mvn`
+
+. Restart and confirm http://localhost:8080/profiles works in browser and with http
+
+  http POST :8080/profiles email='matt.raible@okta.com'
+  http PUT :8080/profiles/1 email='matt.raible@okta.com'
+  http DELETE :8080/profiles/1
+
+. Create `ProfileCreatedEvent`, `ProfileCreatedEventPublisher`, and update `ProfileService` [`webflux-event`, `webflux-publisher`]
+
+. Create `WebSocketConfiguration` for executor bean [`webflux-websocket`]
+
+. Create `ProfileHandler`, `ProfileEndpointConfiguration`, and `CaseInsensitiveRequestPredicate` [`webflux-handler`, `webflux-endpoint`, `webflux-predicate`]
+
+. Restart and confirm http://localhost:8080/profiles works in browser and with http
+
+. Create `static/ws.html` to show event notifications [`webflux-ws`]
+
+. Restore `doOnSuccess` in `ProfileService` and show http://localhost:8080/ws.html with `create.sh`
+
+. Create `ServerSentEventController`, show `http http://localhost:8080/sse/profiles -S` [`webflux-sse`]
+
+=== React App
+
+. Run `npx create-react-app react-app --typescript`; show app with `npm start`
+
+. Modify `App.tsx` and add `componentDidMount()` to fetch profiles [`react-fetch`]
+
+. Create interfaces: `Profile`, `AppProps`, and `AppState`; add constructor and initialize state [`react-constructor`]
+
+. Change `render()` to show profiles [`react-loading` and `react-list`]
+
+. Configure proxy for React and show list of profiles
+
+. Create `ProfileList.tsx` and copy code from `App.tsx`; change `App.tsx` to use `<ProfileList/>`
+
+=== React App with Streaming Data
+
+. Modify `ProfileList.tsx` to fetch every second [`react-interval`]
+
+. Create and run `create-stream.sh`
+
+. Use RxJS: install rxjs first! [`react-rxjs`]
+
+. Use WebSocket [`react-websocket`]
+
+. Create `src/setupProxy.js` to set up proxy for WebSockets [`react-proxy`]
+
+. Use EventSource with SSE [`react-eventsource`]
+
+. Add `@CrossOrigin` in `ServerSentEventController`
+
+=== Authentication with Okta
+
+. Add Spring Security OIDC and dependencies [`ss-maven` || `okta-maven-boot`]
+
+. Create OIDC app in Okta; add properties to `application.yml` [`ss-application` || `okta-oauth2-yaml`]
+
+. Show login redirect from http://localhost:8080/profiles
+
+. Create `SecurityConfiguration` for resource server and CORS [`ss-config`]. Add `resourceserver` settings to `application.yml`.
+
+. Add Okta's React SDK using OktaDev Schematics
+
+  npm install @oktadev/schematics
+  schematics @oktadev/schematics:add-auth
+
+. Show changes in `App.tsx` and new `Home.tsx` file
+
+. Add `<ProfileList auth={this.props.auth}/>` in `Home.tsx`
+
+. Add CSS to `App.css` to make buttons more visible [`react-css`]
+
+. Restart, show app and Loading...
+
+. Update `ProfileList` to add an authorization header + error handling [`react-token`]
+
+. Modify `WebSocketConfiguration.java` to only return an ID.
+
+. Modify `ProfileList` to fetch a profile by ID when added. [`react-websocket2`]
+
+. Run `./create-stream.sh` and show profiles being added.
+
+. Fini!
+
+Source: https://developer.okta.com/blog/2018/09/25/spring-webflux-websockets-react
