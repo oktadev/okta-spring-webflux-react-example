@@ -1,4 +1,4 @@
-== WebFlux + React Demo Steps
+== Full Stack Reactive Workshop Steps
 
 The brackets at the end of each step indicate the alias's or IntelliJ Live Templates to use. You can find the template definitions at https://github.com/mraible/idea-live-templates[mraible/idea-live-templates].
 
