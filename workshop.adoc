@@ -10,90 +10,90 @@ The brackets at the end of each step indicate the alias's or IntelliJ Live Templ
 
 . Add `Profile`, `ProfileRepository`, and `SampleDataInitializer` [`webflux-entity`, `webflux-repo`, `webflux-data`]
 
-  .src/main/java/com/example/demo/Profile.java
-  [%collapsible]
-  ====
-  [,java]
-  ----
-  package com.example.demo;
+.src/main/java/com/example/demo/Profile.java
+[%collapsible]
+====
+[,java]
+----
+package com.example.demo;
 
-  import lombok.AllArgsConstructor;
-  import lombok.Data;
-  import lombok.NoArgsConstructor;
-  import org.springframework.data.annotation.Id;
-  import org.springframework.data.mongodb.core.mapping.Document;
+import lombok.AllArgsConstructor;
+import lombok.Data;
+import lombok.NoArgsConstructor;
+import org.springframework.data.annotation.Id;
+import org.springframework.data.mongodb.core.mapping.Document;
 
-  @Document
-  @Data
-  @AllArgsConstructor
-  @NoArgsConstructor
-  class Profile {
+@Document
+@Data
+@AllArgsConstructor
+@NoArgsConstructor
+class Profile {
 
-      @Id
-      private String id;
+    @Id
+    private String id;
 
-      private String email;
-  }
-  ----
-  ====
+    private String email;
+}
+----
+====
 
-  .src/main/java/com/example/demo/ProfileRepository.java
-  [%collapsible]
-  ====
-  [,java]
-  ----
-  package com.example.demo;
+.src/main/java/com/example/demo/ProfileRepository.java
+[%collapsible]
+====
+[,java]
+----
+package com.example.demo;
 
-  import org.springframework.data.mongodb.repository.ReactiveMongoRepository;
+import org.springframework.data.mongodb.repository.ReactiveMongoRepository;
 
-  interface ProfileRepository extends ReactiveMongoRepository<Profile, String> {
-  }
-  ----
-  ====
+interface ProfileRepository extends ReactiveMongoRepository<Profile, String> {
+}
+----
+====
 
-  .src/main/java/com/example/demo/SampleDataInitializer.java
-  [%collapsible]
-  ====
-  [,java]
-  ----
-  package com.example.demo;
+.src/main/java/com/example/demo/SampleDataInitializer.java
+[%collapsible]
+====
+[,java]
+----
+package com.example.demo;
 
-  import lombok.extern.log4j.Log4j2;
-  import org.springframework.boot.context.event.ApplicationReadyEvent;
-  import org.springframework.context.ApplicationListener;
-  import org.springframework.stereotype.Component;
-  import reactor.core.publisher.Flux;
+import lombok.extern.log4j.Log4j2;
+import org.springframework.boot.context.event.ApplicationReadyEvent;
+import org.springframework.context.ApplicationListener;
+import org.springframework.stereotype.Component;
+import reactor.core.publisher.Flux;
 
-  import java.util.UUID;
+import java.util.UUID;
 
-  @Log4j2
-  @Component
-  @org.springframework.context.annotation.Profile("demo")
-  class SampleDataInitializer implements ApplicationListener<ApplicationReadyEvent> {
+@Log4j2
+@Component
+@org.springframework.context.annotation.Profile("demo")
+class SampleDataInitializer implements ApplicationListener<ApplicationReadyEvent> {
 
-      private final ProfileRepository repository;
+    private final ProfileRepository repository;
 
-      public SampleDataInitializer(ProfileRepository repository) {
-          this.repository = repository;
-      }
+    public SampleDataInitializer(ProfileRepository repository) {
+        this.repository = repository;
+    }
 
-      @Override
-      public void onApplicationEvent(ApplicationReadyEvent event) {
-          repository
-              .deleteAll()
-              .thenMany(
-                  reactor.core.publisher.Flux
-                      .just("A", "B", "C", "D")
-                      .map(name -> new Profile(UUID.randomUUID().toString(), name + "@email.com"))
-                      .flatMap(repository::save)
-              )
-              .thenMany(repository.findAll())
-              .subscribe(profile -> log.info("saving " + profile.toString()));
-      }
-  }
-  ----
-  ====
-
+    @Override
+    public void onApplicationEvent(ApplicationReadyEvent event) {
+        repository
+            .deleteAll()
+            .thenMany(
+                reactor.core.publisher.Flux
+                    .just("A", "B", "C", "D")
+                    .map(name -> new Profile(UUID.randomUUID().toString(), name + "@email.com"))
+                    .flatMap(repository::save)
+            )
+            .thenMany(repository.findAll())
+            .subscribe(profile -> log.info("saving " + profile.toString()));
+    }
+}
+----
+====
+[start=3]
 . Start and see list of profiles in console: `SPRING_PROFILES_ACTIVE=demo mvn`
 
 . Create `ProfileService` [`webflux-service`]
