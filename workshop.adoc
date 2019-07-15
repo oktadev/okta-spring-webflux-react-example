@@ -340,7 +340,7 @@ class ProfileCreatedEventPublisher implements
 ----
 ====
 
-[start=9]
+[start=10]
 . Create `WebSocketConfiguration` for executor bean [`webflux-websocket`]
 
 .`src/main/java/com/example/demo/WebSocketConfiguration.java`
@@ -423,7 +423,7 @@ class WebSocketConfiguration {
 ----
 ====
 
-[start=10]
+[start=11]
 . Create `ProfileHandler`, `ProfileEndpointConfiguration`, and `CaseInsensitiveRequestPredicate` [`webflux-handler`, `webflux-endpoint`, `webflux-predicate`]
 
 .`src/main/java/com/example/demo/ProfileHandler.java`
@@ -591,7 +591,7 @@ class LowerCaseUriServerRequestWrapper extends ServerRequestWrapper {
 ----
 ====
 
-[start=11]
+[start=12]
 . Restart and confirm http://localhost:8080/profiles works in browser and with HTTPie
 
 . Create `static/ws.html` to show event notifications [`webflux-ws`]
@@ -619,7 +619,7 @@ class LowerCaseUriServerRequestWrapper extends ServerRequestWrapper {
 </html>
 ----
 ====
-[start=13]
+[start=14]
 . Restore `doOnSuccess` in `ProfileService`, open in your browser http://localhost:8080/ws.html, and run `create.sh` in a terminal window
 
 .`create.sh`
@@ -634,7 +634,7 @@ curl -H"content-type: application/json" -d'{"email":"random"}' http://localhost:
 ----
 ====
 
-[start=14]
+[start=15]
 . Create `ServerSentEventController`, try `http http://localhost:8080/sse/profiles -S` [`webflux-sse`]
 
 .`src/main/java/com/example/demo/ServerSentEventController.java`
