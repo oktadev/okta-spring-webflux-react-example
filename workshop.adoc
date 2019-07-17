@@ -8,13 +8,7 @@ This workshop is based on the following blog post series:
 2. https://developer.okta.com/blog/2018/09/24/reactive-apis-with-spring-webflux[Build Reactive APIs with Spring WebFlux]
 3. https://developer.okta.com/blog/2018/09/25/spring-webflux-websockets-react[Full Stack Reactive with Spring WebFlux, WebSockets, and React]
 
-You can also watch the following screencast to see all the code created in this series.
-
-++++
-<div style="text-align: center; margin-bottom: 10px">
-<iframe width="700" height="394" style="max-width: 100%" src="https://www.youtube.com/embed/1xpwYe154Ys" frameborder="0" allow="accelerometer; autoplay; encrypted-media; gyroscope; picture-in-picture" allowfullscreen></iframe>
-</div>
-++++
+You can also watch https://www.youtube.com/watch?v=1xpwYe154Ys[a screencast] to see all the code created in this series.
 
 == Agenda
 
@@ -261,7 +255,7 @@ class ProfileRestController {
 [start=7]
 . Restart server with classic profile: `SPRING_PROFILES_ACTIVE=classic mvn`
 
-. Restart and confirm http://localhost:8080/profiles works in browser and with http
+. Restart and confirm http://localhost:8080/profiles works in your browser and with HTTPie
 
   http POST :8080/profiles email='matt.raible@okta.com'
   http PUT :8080/profiles/1 email='matt.raible@okta.com'
@@ -592,7 +586,7 @@ class LowerCaseUriServerRequestWrapper extends ServerRequestWrapper {
 ====
 
 [start=12]
-. Restart and confirm http://localhost:8080/profiles works in browser and with HTTPie
+. Restart and confirm http://localhost:8080/profiles works in your browser and with HTTPie
 
 . Create `static/ws.html` to show event notifications [`webflux-ws`]
 
@@ -635,7 +629,7 @@ curl -H"content-type: application/json" -d'{"email":"random"}' http://localhost:
 ====
 
 [start=15]
-. Create `ServerSentEventController`, try `http http://localhost:8080/sse/profiles -S` [`webflux-sse`]
+. Create `ServerSentEventController` and try `http http://localhost:8080/sse/profiles -S` [`webflux-sse`]
 
 .`src/main/java/com/example/demo/ServerSentEventController.java`
 [%collapsible]
@@ -681,65 +675,605 @@ Follow the steps below or read https://developer.okta.com/blog/2018/09/25/spring
 
 === Create React App
 
-. Run `npx create-react-app react-app --typescript`; show app with `npm start`
+. Run `npx create-react-app react-app --typescript`; view app with `npm start`
 
 . Modify `App.tsx` and add `componentDidMount()` to fetch profiles [`react-fetch`]
 
+.`src/App.tsx`
+[%collapsible]
+====
+[source,tsx]
+----
+import React, { Component } from 'react';
+import logo from './logo.svg';
+import './App.css';
+
+class App extends Component {
+
+  componentDidMount() {
+    this.setState({isLoading: true});
+
+    fetch('//localhost:3000/profiles')
+      .then(response => response.json())
+      .then(data => this.setState({profiles: data, isLoading: false}));
+  }
+
+  render() {
+    return (
+      <div className="App">
+        <header className="App-header">
+          <img src={logo} className="App-logo" alt="logo" />
+
+        </header>
+      </div>
+    );
+  }
+}
+
+export default App;
+----
+====
+
+[start=3]
 . Create interfaces: `Profile`, `AppProps`, and `AppState`; add constructor and initialize state [`react-constructor`]
 
+.`src/App.tsx`
+[%collapsible]
+====
+[source,tsx]
+----
+interface Profile {
+  id: string;
+  name: string;
+}
+
+interface AppProps {
+
+}
+
+interface AppState {
+  isLoading: boolean;
+  profiles: Array<Profile>;
+}
+----
+====
+
+[start=4]
+. Add constructor and initialize state [`react-constructor`]
+
+.`src/App.tsx`
+[%collapsible]
+====
+[source,tsx]
+----
+class App extends Component<AppProps, AppState> {
+
+  constructor(props: AppProps) {
+    super(props);
+
+    this.state = {
+      profiles: [],
+      isLoading: false
+    };
+  }
+  ...
+}
+----
+====
+
+[start=5]
 . Change `render()` to show profiles [`react-loading` and `react-list`]
 
-. Configure proxy for React and show list of profiles
+.`src/App.tsx`
+[%collapsible]
+====
+[source,tsx]
+----
+render() {
+  const {profiles, isLoading} = this.state;
+
+  if (isLoading) {
+    return <p>Loading...</p>;
+  }
+
+  return (
+    <div className="App">
+      <header className="App-header">
+        <img src={logo} className="App-logo" alt="logo" />
+        <div>
+          <h2>Profile List</h2>
+          {profiles.map((profile: Profile) =>
+            <div key={profile.id}>
+              {profile.name}
+            </div>
+          )}
+        </div>
+      </header>
+    </div>
+  );
+}
+----
+====
+
+[start=6]
+. Configure proxy for React in `package.json`, restart the app, and view the list of profiles
+
+  "proxy": "http://localhost:8080"
 
 . Create `ProfileList.tsx` and copy code from `App.tsx`; change `App.tsx` to use `<ProfileList/>`
 
+.`src/ProfileList.tsx`
+[%collapsible]
+====
+[source,tsx]
+----
+import React, { Component } from 'react';
+
+interface Profile {
+  id: string;
+  name: string;
+}
+
+interface ProfileListProps {
+
+}
+
+interface ProfileListState {
+  isLoading: boolean;
+  profiles: Array<Profile>;
+}
+
+class ProfileList extends Component<ProfileListProps, ProfileListState> {
+
+  constructor(props: ProfileListProps) {
+    super(props);
+
+    this.state = {
+      profiles: [],
+      isLoading: false
+    };
+  }
+
+  componentDidMount() {
+    this.setState({isLoading: true});
+
+    fetch('//localhost:3000/profiles')
+      .then(response => response.json())
+      .then(data => this.setState({profiles: data, isLoading: false}));
+  }
+
+  render() {
+    const {profiles, isLoading} = this.state;
+
+    if (isLoading) {
+      return <p>Loading...</p>;
+    }
+
+    return (
+      <div>
+        <h2>Profile List</h2>
+        {profiles.map((profile: Profile) =>
+          <div key={profile.id}>
+            {profile.name}
+          </div>
+        )}
+      </div>
+    );
+  }
+}
+
+export default ProfileList;
+----
+====
+
 === React App with Streaming Data
 
-. Modify `ProfileList.tsx` to fetch every second [`react-interval`]
+. Modify `ProfileList.tsx` to fetch data every second [`react-interval`]
 
+.`src/ProfileList.tsx`
+[%collapsible]
+====
+[source,tsx]
+----
+private interval: any;
+async fetchData() {
+  this.setState({isLoading: true});
+
+  const response = await fetch('http://localhost:3000/profiles');
+  const data = await response.json();
+  this.setState({profiles: data, isLoading: false});
+}
+
+async componentDidMount() {
+  await this.fetchData();
+  this.interval = setInterval(() => this.fetchData(), 1000);
+}
+
+componentWillUnmount() {
+  clearInterval(this.interval);
+}
+----
+====
+
+[start=2]
 . Create and run `create-stream.sh`
 
+.`create-stream.sh`
+[%collapsible]
+====
+[source,bash]
+----
+#!/bin/bash
+port=${1:-8080}
+count=0
+
+profile () {
+  ((count++))
+  echo "posting #${count}"
+  http POST http://localhost:${port}/profiles email="random${count}"
+  if [ $count -gt 120 ]
+  then
+    echo "count is $count, ending..."
+    break
+  fi
+}
+
+while sleep 1; do profile; done
+----
+====
+
+[start=3]
 . Use RxJS: install rxjs first! [`react-rxjs`]
 
+.`src/ProfileList.tsx`
+[%collapsible]
+====
+[source,tsx]
+----
+import { interval } from 'rxjs';
+import { startWith, switchMap } from 'rxjs/operators';
+...
+
+  async componentDidMount() {
+    this.setState({isLoading: true});
+
+    const request = interval(1000).pipe(
+      startWith(0),
+      switchMap(async () =>
+        fetch('http://localhost:3000/profiles')
+          .then((response) => response.json())
+      ));
+
+    request.subscribe(data => {
+      this.setState({profiles: data, isLoading: false});
+    })
+  }
+----
+====
+
+[start=4]
 . Use WebSocket [`react-websocket`]
 
-. Create `src/setupProxy.js` to set up proxy for WebSockets [`react-proxy`]
+.`src/ProfileList.tsx`
+[%collapsible]
+====
+[source,tsx]
+----
+async componentDidMount() {
+  this.setState({isLoading: true});
 
-. Use EventSource with SSE [`react-eventsource`]
+  const response = await fetch('http://localhost:3000/profiles');
+  const data = await response.json();
+  this.setState({profiles: data, isLoading: false});
 
-. Add `@CrossOrigin` in `ServerSentEventController`
+  const socket = new WebSocket('ws://localhost:3000/ws/profiles');
+  socket.addEventListener('message', async (event: any) => {
+    const profile = JSON.parse(event.data);
+    this.state.profiles.push(profile);
+    this.setState({profiles: this.state.profiles});
+  });
+}
+----
+====
+
+[start=5]
+. Create `src/setupProxy.js` to set up proxy for WebSockets [`react-proxy`] and restart
+
+.`src/setupProxy.js`
+[%collapsible]
+====
+[source,js]
+----
+const proxy = require("http-proxy-middleware");
+
+module.exports = app => {
+  app.use(proxy("/ws", {target: "http://localhost:8080", ws: true}))
+}
+----
+====
+
+[start=6]
+. Use EventSource with SSE [`react-eventsource`] and restart React app
+
+.`src/ProfileList.tsx`
+[%collapsible]
+====
+[source,tsx]
+----
+async componentDidMount() {
+  this.setState({isLoading: true});
+
+  const response = await fetch('http://localhost:3000/profiles');
+  const data = await response.json();
+  this.setState({profiles: data, isLoading: false});
+
+  const eventSource = new EventSource('http://localhost:8080/sse/profiles');
+  eventSource.onopen = (event: any) => console.log('open', event);
+  eventSource.onmessage = (event: any) => {
+    const profile = JSON.parse(event.data).source;
+    this.state.profiles.push(profile);
+    this.setState({profiles: this.state.profiles});
+  };
+  eventSource.onerror = (event: any) => console.log('error', event);
+}
+----
+====
+
+[start=7]
+. Add `@CrossOrigin` in `ServerSentEventController` and restart Spring Boot app
 
 === Authentication with Okta
 
-. Add Spring Security OIDC and dependencies [`ss-maven` || `okta-maven-boot`]
+. Add Spring Security OIDC as dependencies [`ss-maven`]
 
-. Create OIDC app in Okta; add properties to `application.yml` [`ss-application` || `okta-oauth2-yaml`]
+.`pom.xml`
+[%collapsible]
+====
+[source,xml]
+----
+<dependency>
+    <groupId>org.springframework.boot</groupId>
+    <artifactId>spring-boot-starter-security</artifactId>
+</dependency>
+<dependency>
+    <groupId>org.springframework.security</groupId>
+    <artifactId>spring-security-oauth2-client</artifactId>
+</dependency>
+<dependency>
+    <groupId>org.springframework.security</groupId>
+    <artifactId>spring-security-oauth2-resource-server</artifactId>
+</dependency>
+<dependency>
+    <groupId>org.springframework.security</groupId>
+    <artifactId>spring-security-oauth2-jose</artifactId>
+</dependency>
+----
+====
 
-. Show login redirect from http://localhost:8080/profiles
+[start=2]
+. Create OIDC app in Okta; add properties to `application.yml` [`ss-application`]
 
-. Create `SecurityConfiguration` for resource server and CORS [`ss-config`]. Add `resourceserver` settings to `application.yml`.
+.`src/main/resources/application.yml`
+[%collapsible]
+====
+[source,yml]
+----
+oidc:
+  issuer-uri: https://{yourOktaDomain}/oauth2/default
+  client-id: {yourClientId}
+  client-secret: {yourClientSecret}
 
+spring:
+  security:
+    oauth2:
+      client:
+        provider:
+          okta:
+            issuer-uri: ${oidc.issuer-uri}
+        registration:
+          okta:
+            client-id: ${oidc.client-id}
+            client-secret: ${oidc.client-secret}
+      resourceserver:
+        jwt:
+          issuer-uri: ${oidc.issuer-uri}
+----
+====
+
+[start=3]
+. Try to load http://localhost:8080/profiles in your browser, you should be redirected to log in
+
+. Create `SecurityConfiguration.java` for resource server and CORS [`ss-config`]
+
+.`src/main/java/com/example/demo/SecurityConfiguration.java`
+[%collapsible]
+====
+[source,java]
+----
+package com.example.demo;
+
+import org.springframework.context.annotation.Bean;
+import org.springframework.security.config.annotation.method.configuration.EnableReactiveMethodSecurity;
+import org.springframework.security.config.annotation.web.reactive.EnableWebFluxSecurity;
+import org.springframework.security.config.web.server.ServerHttpSecurity;
+import org.springframework.security.web.server.SecurityWebFilterChain;
+import org.springframework.security.web.server.csrf.CookieServerCsrfTokenRepository;
+import org.springframework.web.cors.CorsConfiguration;
+import org.springframework.web.cors.reactive.CorsConfigurationSource;
+import org.springframework.web.cors.reactive.UrlBasedCorsConfigurationSource;
+
+import java.util.Collections;
+
+@EnableWebFluxSecurity
+@EnableReactiveMethodSecurity
+public class SecurityConfiguration {
+
+    @Bean
+    public SecurityWebFilterChain securityWebFilterChain(ServerHttpSecurity http) {
+        // @formatter:off
+        return http
+                .csrf()
+                    .csrfTokenRepository(CookieServerCsrfTokenRepository.withHttpOnlyFalse())
+                    .and()
+                .authorizeExchange()
+                    .pathMatchers("/ws/**").permitAll()
+                    .anyExchange().authenticated()
+                    .and()
+                .oauth2Login()
+                    .and()
+                .oauth2ResourceServer()
+                    .jwt().and().and().build();
+        // @formatter:on
+    }
+
+    @Bean
+    CorsConfigurationSource corsConfigurationSource() {
+        CorsConfiguration configuration = new CorsConfiguration();
+        configuration.setAllowCredentials(true);
+        configuration.setAllowedOrigins(Collections.singletonList("http://localhost:3000"));
+        configuration.setAllowedMethods(Collections.singletonList("GET"));
+        configuration.setAllowedHeaders(Collections.singletonList("*"));
+        UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();
+        source.registerCorsConfiguration("/**", configuration);
+        return source;
+    }
+}
+----
+====
+
+[start=5]
 . Add Okta's React SDK using OktaDev Schematics
 
   npm install @oktadev/schematics
   schematics @oktadev/schematics:add-auth
 
-. Show changes in `App.tsx` and new `Home.tsx` file
+. View changes in `App.tsx` and new `Home.tsx` file
 
 . Add `<ProfileList auth={this.props.auth}/>` in `Home.tsx`
 
 . Add CSS to `App.css` to make buttons more visible [`react-css`]
 
-. Restart, show app and Loading...
+  .Buttons {
+    margin-top: 10px;
+  }
 
-. Update `ProfileList` to add an authorization header + error handling [`react-token`]
+  .Buttons button {
+    font-size: 1em;
+  }
 
+. Restart, show app and Loading... view error in your developer console
+
+. Update `ProfileList` to add an authorization header  [`react-token`]
+
+.`src/ProfileList.tsx`
+[%collapsible]
+====
+[source,tsx]
+----
+async componentDidMount() {
+  this.setState({isLoading: true});
+
+  const response = await fetch('http://localhost:8080/profiles', {
+    headers: {
+      Authorization: 'Bearer ' + await this.props.auth.getAccessToken()
+    }
+  });
+  const data = await response.json();
+  this.setState({profiles: data, isLoading: false});
+}
+----
+====
+
+[start=11]
 . Modify `WebSocketConfiguration.java` to only return an ID.
 
+.`src/main/java/com/example/demo/WebSocketConfiguration.java`
+[%collapsible]
+====
+[source,java]
+----
+return session -> {
+
+    Flux<WebSocketMessage> messageFlux = publish.map(evt -> {
+        try {
+            Profile profile = (Profile) evt.getSource();
+            Map<String, String> data = new HashMap<>();
+            data.put("id", profile.getId());
+            return objectMapper.writeValueAsString(data);
+        } catch (JsonProcessingException e) {
+            throw new RuntimeException(e);
+        }
+    }).map(str -> {
+        log.info("sending " + str);
+        return session.textMessage(str);
+    });
+
+    return session.send(messageFlux);
+};
+----
+====
+
+[start=12]
 . Modify `ProfileList` to fetch a profile by ID when added. [`react-websocket2`]
 
-. Run `./create-stream.sh` and show profiles being added.
+.`src/ProfileList.tsx`
+[%collapsible]
+====
+[source,tsx]
+----
+async componentDidMount() {
+  this.setState({isLoading: true});
+  const headers = {
+    headers: {Authorization: 'Bearer ' + await this.props.auth.getAccessToken()} // <1>
+  };
 
+  const response = await fetch('http://localhost:8080/profiles', headers); // <2>
+  const data = await response.json();
+  this.setState({profiles: data, isLoading: false});
+
+  const socket = new WebSocket('ws://localhost:8080/ws/profiles');
+  socket.addEventListener('message', async (event: any) => {
+    const message = JSON.parse(event.data);
+    const request = await fetch(`http://localhost:8080/profiles/${message.id}`, headers); // <3>
+    const profile = await request.json();
+    this.state.profiles.push(profile);
+    this.setState({profiles: this.state.profiles});
+  });
+}
+----
+====
+
+[start=13]
+. Create an access token using https://oidcdebugger.com[OIDC Debugger]
+
+. Modify `./create-stream.sh` to use the access token and show profiles being added.
+
+.`create-stream.sh`
+[%collapsible]
+====
+[source,bash]
+----
+#!/bin/bash
+port=${1:-8080}
+count=0
+accessToken=<your access token>
+
+profile () {
+  ((count++))
+  echo "posting #${count}"
+  http POST http://localhost:${port}/profiles email="random${count}" "Authorization: Bearer ${accessToken}"
+  if [ $count -gt 120 ]
+  then
+    echo "count is $count, ending..."
+    break
+  fi
+}
+
+while sleep 1; do profile; done
+----
+====
+
+[start=15]
 . Fini!
 
 Questions or comments? Please send a message to https://twitter.com/mraible[@mraible] on Twitter, or ask your question on https://developer.okta.com/blog/2018/09/25/spring-webflux-websockets-react[this blog post].
