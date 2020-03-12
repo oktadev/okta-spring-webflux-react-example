@@ -40,7 +40,7 @@ The brackets at the end of each step indicate the alias's or IntelliJ Live Templ
 
 === React App
 
-. Run `npx create-react-app react-app --typescript`; show app with `npm start`
+. Run `npx create-react-app react-app --template typescript`; show app with `npm start`
 
 . Modify `App.tsx` and add `componentDidMount()` to fetch profiles [`react-fetch`]
 
