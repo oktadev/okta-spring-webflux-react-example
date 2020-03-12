@@ -78,6 +78,8 @@ The brackets at the end of each step indicate the alias's or IntelliJ Live Templ
 
 . Create `SecurityConfiguration` for resource server and CORS [`ss-config`]. Add `resourceserver` settings to `application.yml`.
 
+. Create a new SPA app on Okta for React
+
 . Add Okta's React SDK using OktaDev Schematics
 
   npm install @oktadev/schematics
@@ -85,7 +87,7 @@ The brackets at the end of each step indicate the alias's or IntelliJ Live Templ
 
 . Show changes in `App.tsx` and new `Home.tsx` file
 
-. Add `<ProfileList auth={this.props.auth}/>` in `Home.tsx`
+. Add `<ProfileList authState={this.props.authState}/>` in `Home.tsx`
 
 . Add CSS to `App.css` to make buttons more visible [`react-css`]
 
